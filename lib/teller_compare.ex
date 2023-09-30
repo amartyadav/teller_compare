@@ -23,21 +23,17 @@ defmodule TellerCompare do
     parsed_file1 = read_parse_json(file1_path)
     parsed_file2 = read_parse_json(file2_path)
 
-    {changes, additions, removals} = compare_data(parsed_file1, parsed_file2)
+    changes = compare_data_deep(parsed_file1, parsed_file2)
 
     # Use Logger to format the output
-    CustomLogger.format_log(changes, "Changes")
-    CustomLogger.format_log(additions, "Additions")
-    CustomLogger.format_log(removals, "Removals")
+    # CustomLogger.format_log(changes, "Changes")
+
 
     # creating file output
     changes_content = "Changes:\n" <> (Enum.map(changes, &CustomLogger.format_entry_for_file(&1)) |> Enum.join("\n"))
-    additions_content = "\n\nAdditions:\n" <> (Enum.map(additions, &CustomLogger.format_entry_for_file(&1)) |> Enum.join("\n"))
-    removals_content = "\n\nRemovals:\n" <> (Enum.map(removals, &CustomLogger.format_entry_for_file(&1)) |> Enum.join("\n"))
 
 
-    output_content = changes_content <> additions_content <> removals_content <> "\n\n"
-
+    output_content = changes_content <> "\n\n"
 
     # writing to file
     output_path = "output_diff.txt"
@@ -47,56 +43,70 @@ defmodule TellerCompare do
     end
   end
 
+  def compare_data_deep(data1, data2) do
+    data1_map = Map.new(data1, & {identifier(&1), &1})
+    data2_map = Map.new(data2, & {identifier(&1), &1})
+
+    IO.puts("data1_map: #{inspect(data1_map)}")
+    IO.puts("data2_map: #{inspect(data2_map)}")
+
+    key = {"https://status.thebank.teller.engineering/status.json?downtimeTimestamp=1691577508.930853", "GET"}
+    IO.puts("Key in data1_map: #{Map.has_key?(data1_map, key)}")
+    IO.puts("Key in data2_map: #{Map.has_key?(data2_map, key)}")
+
+    common_keys = for {k, _v} <- data1_map, Map.has_key?(data2_map, k), do: k
+    IO.puts("common_keys: #{inspect(common_keys)}")
+
+    common_keys_set = MapSet.new(common_keys)
+
+    changes = Enum.flat_map(common_keys_set, fn key ->
+      obj1 = Map.get(data1_map, key)
+      obj2 = Map.get(data2_map, key)
+
+      request_changes = DeepComparator.compare_requests(obj1.request, obj2.request)
+      response_changes = DeepComparator.compare_response(obj1.response, obj2.response)
+
+      request_changes ++ response_changes
+    end)
+
+    # changes = []
+    # Enum.each(common_keys, fn key ->
+    #   obj1 = Map.get(data1_map, key)
+    #   obj2 = Map.get(data2_map, key)
+
+    #   IO.puts("obj1: #{inspect(obj1)}")
+
+    #   request_changes = DeepComparator.compare_requests(obj1.request, obj2.request)
+    #   response_changes = DeepComparator.compare_response(obj1.response, obj2.response)
+
+    #   ^changes = changes ++ request_changes ++ response_changes
+    # end)
+
+    additions = data2_map |> Map.drop(MapSet.to_list(common_keys_set))
+    |> Map.values()
+    |> Enum.map(fn obj -> "Addition: #{inspect(obj)}" end)
+
+    removals = data1_map |> Map.drop(MapSet.to_list(common_keys_set))
+    |> Map.values()
+    |> Enum.map(fn obj -> "Removal: #{inspect(obj)}" end)
+
+    changes ++ additions ++ removals
+  end
+
+  defp identifier(%MainObject{request: %Request{url: url, method: method}}), do: {url, method}
+
   def read_parse_json(path) do
     {:ok, content} = File.read(path)
     parsed_content = Poison.decode!(content, as: [%MainObject{
     request: %Request{headers: [%Header{}]},
     response: %Response{headers: [%Header{}]}
     }])
-    IO.puts("Parsed Content----")
-    IO.puts(inspect(parsed_content))
-    IO.puts("\n")
+    # IO.puts("Parsed Content----")
+    # IO.puts(inspect(parsed_content))
+    # IO.puts("\n")
     parsed_content
   end
 
-  def compare_lists(list1, list2) when is_list(list1) and is_list(list2) do
-    # Additions are items present in list2 but not in list1.
-    additions = list2 -- list1
-    IO.puts("Additions----")
-    IO.puts(inspect(additions))
-
-    # Removals are items present in list1 but not in list2.
-    removals = list1 -- list2
-    IO.puts("Removals----")
-    IO.puts(inspect(removals))
-
-    IO.puts("List 1----")
-    IO.puts(inspect(list1))
-    IO.puts("List 2----")
-    IO.puts(inspect(list2))
-
-    # Changes are items that exist in both lists but are not identical.
-    # This approach assumes the data structure has a meaningful equality check.
-#    common_list1 = list1 -- removals
-#    common_list2 = list2 -- additions
-#    IO.puts("Common List 1----")
-#    IO.puts(inspect(common_list1))
-#    IO.puts("Common List 2----")
-#    IO.puts(inspect(common_list2))
-
-#    changes = Enum.zip(common_list1, common_list2)
-#              |> Enum.filter(fn {a, b} -> a != b end)
-#              |> Enum.map(fn {_, b} -> b end)
-
-    # making an empty list of changes temporarily
-    changes = []
-
-    {changes, additions, removals}
-  end
-
-  def compare_data(data1, data2) when is_list(data1) and is_list(data2) do
-    compare_lists(data1, data2)
-  end
 end
 
 defmodule CustomLogger do
@@ -131,6 +141,9 @@ defmodule CustomLogger do
     IO.puts("---")
   end
 
+  def format_entry(message) when is_binary(message), do: IO.puts(message)
+
+
   def format_entry_for_file(%MainObject{request: request, response: response}) do
     [
       "URL: #{request.url}",
@@ -144,5 +157,102 @@ defmodule CustomLogger do
     ] |> Enum.filter(& &1) |> Enum.join("\n")
   end
 
+   # Handle plain strings
+   def format_entry_for_file(message) when is_binary(message), do: message
 
+
+end
+
+defmodule DeepComparator do
+  def compare_requests(req1, req2) do
+    # compare url
+    # compare method
+    # compare headers
+    # compare body
+
+    changes = []
+
+     # Check for URL differences
+     changes =
+     cond do
+       req1.url != req2.url -> changes ++ ["URL: #{req1.url} -> #{req2.url}"]
+       true -> changes
+     end
+
+   # Check for method differences
+   changes =
+     cond do
+       req1.method != req2.method -> changes ++ ["Method: #{req1.method} -> #{req2.method}"]
+       true -> changes
+     end
+
+   # Check for body differences
+   changes =
+     cond do
+       req1.body != req2.body -> changes ++ ["Body: #{req1.body} -> #{req2.body}"]
+       true -> changes
+     end
+
+    # compare headers
+    header_changes = compare_headers(req1.headers, req2.headers)
+    changes = changes ++ header_changes
+
+    changes
+  end
+
+  def compare_response(resp1, resp2) do
+    # compare status code
+    # compare status text
+    # compare body
+    # compare headers
+
+    changes = []
+
+    changes =
+    cond do
+      resp1.status_code != resp2.status_code -> changes ++ ["Status Code: #{resp1.status_code} -> #{resp2.status_code}"]
+      true -> changes
+    end
+
+    changes =
+    cond do
+      resp1.status_text != resp2.status_text -> changes ++ ["Status Text: #{resp1.status_text} -> #{resp2.status_text}"]
+      true -> changes
+    end
+
+    changes =
+    cond do
+      resp1.body != resp2.body -> changes ++ ["Body: #{resp1.body} -> #{resp2.body}"]
+      true -> changes
+    end
+
+    # compare headers
+    header_changes = compare_headers(resp1.headers, resp2.headers)
+    changes = changes ++ header_changes
+
+    changes
+  end
+
+  def compare_headers(headers1, headers2) do
+    changes = []
+    # comparing headers' order and content
+    Enum.zip(headers1, headers2)
+    |> Enum.each(fn {h1, h2} when h1 != h2 ->
+      changes = [changes | "Header: #{h1.name}: #{h1.value} -> #{h2.name}: #{h2.value}"]
+      _ -> nil
+    end)
+
+    # finding header additions and removals
+    additions = headers2 -- headers1
+    removals = headers1 -- headers2
+
+    Enum.each(additions, fn header ->
+      changes = [changes | "Header Addition: #{header.name}: #{header.value}"]
+    end)
+
+    Enum.each(removals, fn header ->
+      changes = [changes | "Header Removal: #{header.name}: #{header.value}"]
+    end)
+    changes
+  end
 end
