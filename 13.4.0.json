@@ -1,0 +1,398 @@
+[
+  {
+    "http_version": "HTTP/1.1",
+    "request": {
+      "body": null,
+      "headers": [
+        {
+          "name": "Host",
+          "value": "thebank.teller.engineering"
+        },
+        {
+          "name": "Cache-Control",
+          "value": "no-cache"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Accept",
+          "value": "application/json"
+        },
+        {
+          "name": "Cookie",
+          "value": "AppVersion=13.4.0;AppType=iPhone;AI=A3254415;"
+        },
+        {
+          "name": "User-Agent",
+          "value": "TheBankMobile/13.4.0 (iPhone; iOS 16.5)"
+        },
+        {
+          "name": "x-sectrace",
+          "value": "b645a590-b5e3-49c6-9efe-ce774f02de08"
+        },
+        {
+          "name": "Accept-Language",
+          "value": "en-US;q=1"
+        },
+        {
+          "name": "Accept-Encoding",
+          "value": "gzip, deflate, br"
+        },
+        {
+          "name": "Connection",
+          "value": "keep-alive"
+        }
+      ],
+      "method": "GET",
+      "url": "https://thebank.teller.engineering/api/apps/A3254415/configuration?osVersion=16.5appType=iPhone&appVersion=13.4.0"
+    },
+    "response": {
+      "body": "{\"appId\":\"A3254415\",\"appName\":\"The Bank Mobile\",\"properties\":{\"balanceEnablement\":\"Enabled\",\"showAccountNumberEnablement\":\"Enabled\",\"paymentsEnablement\":\"Disabled\",\"chatEnablement\":\"Disabled\",\"aiEnablement\":\"Disabled\",\"zelleEnablement\":\"Enabled\",\"rewardsEnablement\":\"Disabled\",\"sessionTimeout\":660}}",
+      "headers": [
+        {
+          "name": "Cache-Control",
+          "value": "no-store, max-age=0"
+        },
+        {
+          "name": "Pragma",
+          "value": "no-cache"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json; charset=utf-8"
+        },
+        {
+          "name": "Set-Cookie",
+          "value": "CorrelationId=c7129b04-498b-4fcc-9a3e-940a9ab3caf6;HttpOnly;Secure"
+        },
+        {
+          "name": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "name": "X-Frame-Options",
+          "value": "deny"
+        },
+        {
+          "name": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubdomains"
+        },
+        {
+          "name": "Content-Security-Policy",
+          "value": "default-src 'self';style-src 'self';script-src 'self'; frame-ancestors 'self'"
+        },
+        {
+          "name": "X-Xss-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "name": "Add-No-Store",
+          "value": ""
+        },
+        {
+          "name": "Server-Timing",
+          "value": "dtSInfo;desc=\"0\""
+        },
+        {
+          "name": "Date",
+          "value": "Wed, 09 Aug 2023 10:38:30 GMT"
+        },
+        {
+          "name": "Content-Length",
+          "value": "5525"
+        },
+        {
+          "name": "Set-Cookie",
+          "value": "persist__data=TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsIGNvbnNlY3RldHVyIGFkaXBpc2NpbmcgZWxpdC4gQWxpcXVhbSB2ZWxpdCBzZW0sIGNvbnZhbGxpcyBhdCBudW5jIGVnZXN0YXMsIHVsdHJpY2llcyB2dWxwdXRhdGUgbmVxdWUuIE51bGxhIHRlbXB1cyBpYWN1bGlzIHBvc3VlcmU=; path=/; Httponly; Secure"
+        }
+      ],
+      "status_code": 200,
+      "status_text": "OK"
+    }
+  },
+  {
+    "http_version": "HTTP/1.1",
+    "request": {
+      "body": null,
+      "headers": [
+        {
+          "name": "Host",
+          "value": "status.thebank.teller.engineering"
+        },
+        {
+          "name": "Accept",
+          "value": "*/*"
+        },
+        {
+          "name": "User-Agent",
+          "value": "TheBankMobile/13.4.0 (iPhone; iOS 16.5)"
+        },
+        {
+          "name": "Accept-Language",
+          "value": "en-US;q=0.8"
+        },
+        {
+          "name": "Accept-Encoding",
+          "value": "gzip, deflate, br"
+        },
+        {
+          "name": "Connection",
+          "value": "keep-alive"
+        }
+      ],
+      "method": "GET",
+      "url": "https://status.thebank.teller.engineering/status.json?downtimeTimestamp=1691577508.930853"
+    },
+    "response": {
+      "body": "{\r\n    \"id\":  \"NWUzZWMyOT222222NTUzYzc0YjMz555555Y4YjM3ZW44444hY2I2OQ==\"\r\n}\r\n",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Last-Modified",
+          "value": "Sun, 12 Jun 2022 07:56:20 GMT"
+        },
+        {
+          "name": "Accept-Ranges",
+          "value": "bytes"
+        },
+        {
+          "name": "ETag",
+          "value": "\"f91062e7317ed81:0\""
+        },
+        {
+          "name": "Server",
+          "value": "Microsoft-IIS/8.5"
+        },
+        {
+          "name": "X-Powered-By",
+          "value": "ASP.NET"
+        },
+        {
+          "name": "Date",
+          "value": "Wed, 09 Aug 2023 10:38:29 GMT"
+        },
+        {
+          "name": "Content-Length",
+          "value": "77"
+        }
+      ],
+      "status_code": 200,
+      "status_text": "OK"
+    }
+  },
+  {
+    "http_version": "HTTP/1.1",
+    "request": {
+      "body": "dGVsbGVyLWNoYWxsZW5nZQ==",
+      "headers": [
+        {
+          "name": "Host",
+          "value": "thebank.teller.engineering"
+        },
+        {
+          "name": "Cache-Control",
+          "value": "no-cache"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Accept",
+          "value": "application/json"
+        },
+        {
+          "name": "Cookie",
+          "value": "AppVersion=13.4.0;AppType=iPhone;AI=A3254415;"
+        },
+        {
+          "name": "User-Agent",
+          "value": "TheBankMobile/13.4.0 (iPhone; iOS 16.5)"
+        },
+        {
+          "name": "x-sectrace",
+          "value": "b645a590-b5e3-49c6-9efe-ce774f02de08"
+        },
+        {
+          "name": "Accept-Language",
+          "value": "en-US;q=1"
+        },
+        {
+          "name": "Accept-Encoding",
+          "value": "gzip, deflate, br"
+        },
+        {
+          "name": "Connection",
+          "value": "keep-alive"
+        }
+      ],
+      "method": "POST",
+      "url": "https://thebank.teller.engineering/api/sectrace/verify"
+    },
+    "response": {
+      "body": "{\"status\":\"accepted\"}",
+      "headers": [
+        {
+          "name": "Cache-Control",
+          "value": "no-store, max-age=0"
+        },
+        {
+          "name": "Pragma",
+          "value": "no-cache"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json; charset=utf-8"
+        },
+        {
+          "name": "Set-Cookie",
+          "value": "CorrelationId=c7129b04-498b-4fcc-9a3e-940a9ab3caf6;HttpOnly;Secure"
+        },
+        {
+          "name": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "name": "X-Frame-Options",
+          "value": "deny"
+        },
+        {
+          "name": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubdomains"
+        },
+        {
+          "name": "Content-Security-Policy",
+          "value": "default-src 'self';style-src 'self';script-src 'self'; frame-ancestors 'self'"
+        },
+        {
+          "name": "X-Xss-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "name": "Add-No-Store",
+          "value": ""
+        },
+        {
+          "name": "Server-Timing",
+          "value": "dtSInfo;desc=\"0\""
+        },
+        {
+          "name": "Date",
+          "value": "Wed, 09 Aug 2023 10:38:30 GMT"
+        },
+        {
+          "name": "Content-Length",
+          "value": "5525"
+        },
+        {
+          "name": "Set-Cookie",
+          "value": "persist__data=TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsIGNvbnNlY3RldHVyIGFkaXBpc2NpbmcgZWxpdC4gQWxpcXVhbSB2ZWxpdCBzZW0sIGNvbnZhbGxpcyBhdCBudW5jIGVnZXN0YXMsIHVsdHJpY2llcyB2dWxwdXRhdGUgbmVxdWUuIE51bGxhIHRlbXB1cyBpYWN1bGlzIHBvc3VlcmU=; path=/; Httponly; Secure"
+        }
+      ],
+      "status_code": 200,
+      "status_text": "OK"
+    }
+  },
+  {
+    "http_version": "HTTP/1.1",
+    "request": {
+      "body": "{\"credentials\":{\"password\":\"bar\",\"username\":\"foo\",\"appId\":\"A3254415\"},\"applicationInfo\":{\"pushProvider\":\"APNS\",\"versionNumber\":\"13.4.0\",\"pushAppId\":\"engineering.teller.thebank\"},\"deviceInfo\":{\"os\":\"iPhone OS\",\"clientDeviceFingerprint\":\"Language__en-us___Platform__iPhone___ScreenColorDepth__32___DeviceUUID__F30AC5E4-1A35-4D75-94FA-586CFA9F64DF___ScreenHeight__812___ScreenWidth__375___GUID__421659E7-4281-464A-976B-54F5EDFCF2D3\",\"screenHeight\":812,\"osVersion\":\"16.5\",\"type\":\"iPhone\",\"name\":\"iPhone\",\"deviceIntegrity\":0,\"uniqueId\":\"F30AC5E4-1A35-4D75-94FA-586CFA9F64DF\",\"screenWidth\":375}}",
+      "headers": [
+        {
+          "name": "Host",
+          "value": "thebank.teller.engineering"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Accept",
+          "value": "application/json"
+        },
+        {
+          "name": "Connection",
+          "value": "keep-alive"
+        },
+        {
+          "name": "Cookie",
+          "value": "AppVersion=13.4.0;AppType=iPhone;AI=A3254415;CorrelationId=c7129b04-498b-4fcc-9a3e-940a9ab3caf6;persist__data=TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGGFkaXBpc2NpbmcgZWxpdC4gQWxpcXVhbSB2ZWxpdCBzZW0sIGNvbnZhbGxpcyBhdCBudW5jIGVnZXN0YXMsIHVsdHJpY2llcyB2dWxwdXRhdGUgbmVxdWUuIE5N1bGlzIHBvc3VlcmU=;"
+        },
+        {
+          "name": "User-Agent",
+          "value": "TheBankMobile/13.4.0 (iPhone; iOS 16.5)"
+        },
+        {
+          "name": "x-sectrace",
+          "value": "57c1618d-d03d-4563-9b04-11c9e3cb67e4"
+        },
+        {
+          "name": "Accept-Language",
+          "value": "en-us"
+        },
+        {
+          "name": "Accept-Encoding",
+          "value": "gzip, deflate, br"
+        },
+        {
+          "name": "Content-Length",
+          "value": "621"
+        }
+      ],
+      "method": "POST",
+      "url": "https://thebank.teller.engineering/api/accesstokens/usernameandpassword"
+    },
+    "response": {
+      "body": "{\"message\":\"Forbidden\",\"code\":1001}",
+      "headers": [
+        {
+          "name": "Cache-Control",
+          "value": "no-store, max-age=0"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json; charset=utf-8"
+        },
+        {
+          "name": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "name": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubdomains"
+        },
+        {
+          "name": "Content-Security-Policy",
+          "value": "default-src 'self';style-src 'self';script-src 'self'; frame-ancestors 'self'"
+        },
+        {
+          "name": "X-Frame-Options",
+          "value": "deny"
+        },
+        {
+          "name": "X-Xss-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "name": "Pragma",
+          "value": "no-cache"
+        },
+        {
+          "name": "Add-No-Store",
+          "value": ""
+        },
+        {
+          "name": "Content-Length",
+          "value": "35"
+        }
+      ],
+      "status_code": 403,
+      "status_text": "Forbidden"
+    }
+  }
+]
