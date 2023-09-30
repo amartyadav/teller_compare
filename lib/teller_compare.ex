@@ -64,7 +64,7 @@ defmodule TellerCompare do
       obj2 = Map.get(data2_map, key)
 
       request_changes = DeepComparator.compare_requests(obj1.request, obj2.request)
-      response_changes = DeepComparator.compare_response(obj1.response, obj2.response)
+      response_changes = DeepComparator.compare_response(key, obj1.response, obj2.response)
 
       request_changes ++ response_changes
     end)
@@ -175,21 +175,21 @@ defmodule DeepComparator do
      # Check for URL differences
      changes =
      cond do
-       req1.url != req2.url -> changes ++ ["URL: #{req1.url} -> #{req2.url}"]
+       req1.url != req2.url -> changes ++ ["URL+Method (identifier): #{req1.url},#{req1.method} \n Request URL: #{req1.url} -> #{req2.url}"]
        true -> changes
      end
 
    # Check for method differences
    changes =
      cond do
-       req1.method != req2.method -> changes ++ ["Method: #{req1.method} -> #{req2.method}"]
+       req1.method != req2.method -> changes ++ ["URL+Method (identifier): #{req1.url},#{req1.method} \n Request Method: #{req1.method} -> #{req2.method}"]
        true -> changes
      end
 
    # Check for body differences
    changes =
      cond do
-       req1.body != req2.body -> changes ++ ["Body: #{req1.body} -> #{req2.body}"]
+       req1.body != req2.body -> changes ++ ["URL+Method (identifier): #{req1.url},#{req1.method} \n Request Body: #{req1.body} -> #{req2.body}"]
        true -> changes
      end
 
@@ -200,29 +200,31 @@ defmodule DeepComparator do
     changes
   end
 
-  def compare_response(resp1, resp2) do
+  def compare_response(key, resp1, resp2) do
     # compare status code
     # compare status text
     # compare body
     # compare headers
 
     changes = []
+    #get the values of the key tuple and concatenate to string
+    key = "#{elem(key, 0)},#{elem(key, 1)}"
 
     changes =
     cond do
-      resp1.status_code != resp2.status_code -> changes ++ ["Status Code: #{resp1.status_code} -> #{resp2.status_code}"]
+      resp1.status_code != resp2.status_code -> changes ++ ["URL+Method (identifier): #{key} \n Response Status Code: #{resp1.status_code} -> #{resp2.status_code}"]
       true -> changes
     end
 
     changes =
     cond do
-      resp1.status_text != resp2.status_text -> changes ++ ["Status Text: #{resp1.status_text} -> #{resp2.status_text}"]
+      resp1.status_text != resp2.status_text -> changes ++ ["URL+Method (identifier): #{key} \n Response Status Text: #{resp1.status_text} -> #{resp2.status_text}"]
       true -> changes
     end
 
     changes =
     cond do
-      resp1.body != resp2.body -> changes ++ ["Body: #{resp1.body} -> #{resp2.body}"]
+      resp1.body != resp2.body -> changes ++ ["URL+Method (identifier): #{key} \n Response Body: #{resp1.body} -> #{resp2.body}"]
       true -> changes
     end
 
