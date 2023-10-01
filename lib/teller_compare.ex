@@ -20,23 +20,22 @@ end
 
 defmodule TellerCompare do
   def main([file1_path, file2_path]) do
-    parsed_file1 = read_parse_json(file1_path)
-    parsed_file2 = read_parse_json(file2_path)
+
+    parsed_file1 = read_parse_json(file1_path) # reading and parsing file1
+    parsed_file2 = read_parse_json(file2_path) # reading and parsing file2
 
     changes = compare_data_deep(parsed_file1, parsed_file2)
 
-    # Use Logger to format the output
-    # CustomLogger.format_log(changes, "Changes")
-
-
     # creating file output
-    changes_content = "Changes:\n" <> (Enum.map(changes, &CustomLogger.format_entry_for_file(&1)) |> Enum.join("\n"))
-
+    changes_content =
+      "Changes:\n" <>
+        (Enum.map(changes, &CustomLogger.format_entry_for_file(&1)) |> Enum.join("\n"))
 
     output_content = changes_content <> "\n\n"
 
     # writing to file
     output_path = "output_diff.txt"
+
     case File.write(output_path, output_content) do
       :ok -> IO.puts("Successfully wrote to #{output_path}")
       {:error, reason} -> IO.puts("Failed to write to #{output_path}: #{reason}")
@@ -44,52 +43,54 @@ defmodule TellerCompare do
   end
 
   def compare_data_deep(data1, data2) do
-    data1_map = Map.new(data1, & {identifier(&1), &1})
-    data2_map = Map.new(data2, & {identifier(&1), &1})
+    # creating a map for data1 with the identifier() function's return value as the key and the object as the value
+    data1_map = Map.new(data1, &{identifier(&1), &1})
 
-    IO.puts("data1_map: #{inspect(data1_map)}")
-    IO.puts("data2_map: #{inspect(data2_map)}")
+    # creating a map for data2 with the identifier() function's return value as the key and the object as the value
+    data2_map = Map.new(data2, &{identifier(&1), &1})
 
-    key = {"https://status.thebank.teller.engineering/status.json?downtimeTimestamp=1691577508.930853", "GET"}
-    IO.puts("Key in data1_map: #{Map.has_key?(data1_map, key)}")
-    IO.puts("Key in data2_map: #{Map.has_key?(data2_map, key)}")
+    # IO.puts("data1_map: #{inspect(data1_map)}")
+    # IO.puts("data2_map: #{inspect(data2_map)}")
 
+    # key = {"https://status.thebank.teller.engineering/status.json?downtimeTimestamp=1691577508.930853", "GET"}
+    # IO.puts("Key in data1_map: #{Map.has_key?(data1_map, key)}")
+    # IO.puts("Key in data2_map: #{Map.has_key?(data2_map, key)}")
+
+    # finding the common keys between the two maps using list comprehension
     common_keys = for {k, _v} <- data1_map, Map.has_key?(data2_map, k), do: k
-    IO.puts("common_keys: #{inspect(common_keys)}")
+    # IO.puts("common_keys: #{inspect(common_keys)}")
 
+    # creating a set of the common keys
     common_keys_set = MapSet.new(common_keys)
 
-    changes = Enum.flat_map(common_keys_set, fn key ->
-      obj1 = Map.get(data1_map, key)
-      obj2 = Map.get(data2_map, key)
+    # extracting the values of the common keys from the maps to pass them to the deep comparator as arguments
+    # changes will contain the changes in the requests and responses
+    changes =
+      Enum.flat_map(common_keys_set, fn key ->
+        obj1 = Map.get(data1_map, key)
+        obj2 = Map.get(data2_map, key)
 
-      request_changes = DeepComparator.compare_requests(obj1.request, obj2.request)
-      response_changes = DeepComparator.compare_response(key, obj1.response, obj2.response)
+        request_changes = DeepComparator.compare_requests(obj1.request, obj2.request) # comparing request
+        response_changes = DeepComparator.compare_response(key, obj1.response, obj2.response) # comparing response
 
-      request_changes ++ response_changes
-    end)
+        request_changes ++ response_changes # combining the changes
+      end)
 
-    # changes = []
-    # Enum.each(common_keys, fn key ->
-    #   obj1 = Map.get(data1_map, key)
-    #   obj2 = Map.get(data2_map, key)
+    # finding the additions. dropping the common keys from data2_map (second file) to get the additions
+    additions =
+      data2_map
+      |> Map.drop(MapSet.to_list(common_keys_set))
+      |> Map.values()
+      |> Enum.map(fn obj -> "Addition: #{inspect(obj)}" end)
 
-    #   IO.puts("obj1: #{inspect(obj1)}")
+    # finding the removals. dropping the common keys from data1_map(first file) to get the removals
+    removals =
+      data1_map
+      |> Map.drop(MapSet.to_list(common_keys_set))
+      |> Map.values()
+      |> Enum.map(fn obj -> "Removal: #{inspect(obj)}" end)
 
-    #   request_changes = DeepComparator.compare_requests(obj1.request, obj2.request)
-    #   response_changes = DeepComparator.compare_response(obj1.response, obj2.response)
-
-    #   ^changes = changes ++ request_changes ++ response_changes
-    # end)
-
-    additions = data2_map |> Map.drop(MapSet.to_list(common_keys_set))
-    |> Map.values()
-    |> Enum.map(fn obj -> "Addition: #{inspect(obj)}" end)
-
-    removals = data1_map |> Map.drop(MapSet.to_list(common_keys_set))
-    |> Map.values()
-    |> Enum.map(fn obj -> "Removal: #{inspect(obj)}" end)
-
+    # combining the changes, additions and removals
     changes ++ additions ++ removals
   end
 
@@ -97,70 +98,27 @@ defmodule TellerCompare do
 
   def read_parse_json(path) do
     {:ok, content} = File.read(path)
-    parsed_content = Poison.decode!(content, as: [%MainObject{
-    request: %Request{headers: [%Header{}]},
-    response: %Response{headers: [%Header{}]}
-    }])
+
+    # decoding/parsing the json content as per the structs defined above
+    parsed_content =
+      Poison.decode!(content,
+        as: [
+          %MainObject{
+            request: %Request{headers: [%Header{}]},
+            response: %Response{headers: [%Header{}]}
+          }
+        ]
+      )
+
     # IO.puts("Parsed Content----")
     # IO.puts(inspect(parsed_content))
     # IO.puts("\n")
     parsed_content
   end
-
 end
 
 defmodule CustomLogger do
-  def format_log(entries, title) when is_list(entries) do
-    IO.puts("#{title}:")
-    Enum.each(entries, &format_entry(&1))
-    IO.puts("\n")
-  end
-
-  def format_entry(%MainObject{request: request, response: response}) do
-    IO.puts("URL: #{request.url}")
-    IO.puts("Method: #{request.method}")
-
-    IO.puts("Request Headers:")
-    Enum.each(request.headers, &IO.puts("  #{&1.name}: #{&1.value}"))
-
-    if request.body do
-      IO.puts("Request Body:")
-      IO.puts("  #{request.body}")
-    end
-
-    IO.puts("Response Status: #{response.status_code} #{response.status_text}")
-
-    IO.puts("Response Headers:")
-    Enum.each(response.headers, &IO.puts("  #{&1.name}: #{&1.value}"))
-
-    if response.body do
-      IO.puts("Response Body:")
-      IO.puts("  #{response.body}")
-    end
-
-    IO.puts("---")
-  end
-
-  def format_entry(message) when is_binary(message), do: IO.puts(message)
-
-
-  def format_entry_for_file(%MainObject{request: request, response: response}) do
-    [
-      "URL: #{request.url}",
-      "Method: #{request.method}",
-      "Request Headers:" <> "\n" <> Enum.map_join(request.headers, "\n", fn header -> "  #{header.name}: #{header.value}" end),
-      "Request Body: #{request.body}",
-      "Response Status: #{response.status_code} #{response.status_text}",
-      "Response Headers:" <> "\n" <> Enum.map_join(response.headers, "\n", fn header -> "  #{header.name}: #{header.value}" end),
-      "Response Body: #{response.body}",
-      "---"
-    ] |> Enum.filter(& &1) |> Enum.join("\n")
-  end
-
-   # Handle plain strings
-   def format_entry_for_file(message) when is_binary(message), do: message
-
-
+  def format_entry_for_file(message) when is_binary(message), do: message
 end
 
 defmodule DeepComparator do
@@ -172,29 +130,48 @@ defmodule DeepComparator do
 
     changes = []
 
-     # Check for URL differences
-     changes =
-     cond do
-       req1.url != req2.url -> changes ++ ["URL+Method (identifier): #{req1.url},#{req1.method} \n Request URL: #{req1.url} -> #{req2.url}"]
-       true -> changes
-     end
+    # Check for URL differences
+    changes =
+      cond do
+        req1.url != req2.url ->
+          changes ++
+            [
+              "URL+Method (identifier): #{req1.url},#{req1.method} \n Request URL Change: #{req1.url} -> #{req2.url}\n"
+            ]
 
-   # Check for method differences
-   changes =
-     cond do
-       req1.method != req2.method -> changes ++ ["URL+Method (identifier): #{req1.url},#{req1.method} \n Request Method: #{req1.method} -> #{req2.method}"]
-       true -> changes
-     end
+        true ->
+          changes
+      end
 
-   # Check for body differences
-   changes =
-     cond do
-       req1.body != req2.body -> changes ++ ["URL+Method (identifier): #{req1.url},#{req1.method} \n Request Body: #{req1.body} -> #{req2.body}"]
-       true -> changes
-     end
+    # Check for method differences
+    changes =
+      cond do
+        req1.method != req2.method ->
+          changes ++
+            [
+              "URL+Method (identifier): #{req1.url},#{req1.method} \n Request Method Change: #{req1.method} -> #{req2.method}\n"
+            ]
+
+        true ->
+          changes
+      end
+
+    # Check for body differences
+    changes =
+      cond do
+        req1.body != req2.body ->
+          changes ++
+            [
+              "URL+Method (identifier): #{req1.url},#{req1.method} \n Request Body Change: #{req1.body} -> #{req2.body}\n"
+            ]
+
+        true ->
+          changes
+      end
 
     # compare headers
-    header_changes = compare_headers(req1.headers, req2.headers)
+    header_changes = compare_headers(req1, req2, req1.headers, req2.headers)
+    IO.puts("header_changes: #{inspect(header_changes)}")
     changes = changes ++ header_changes
 
     changes
@@ -207,54 +184,100 @@ defmodule DeepComparator do
     # compare headers
 
     changes = []
-    #get the values of the key tuple and concatenate to string
+    # get the values of the key tuple and concatenate to string
     key = "#{elem(key, 0)},#{elem(key, 1)}"
 
     changes =
-    cond do
-      resp1.status_code != resp2.status_code -> changes ++ ["URL+Method (identifier): #{key} \n Response Status Code: #{resp1.status_code} -> #{resp2.status_code}"]
-      true -> changes
-    end
+      cond do
+        resp1.status_code != resp2.status_code ->
+          changes ++
+            [
+              "URL+Method (identifier): #{key} \n Response Status Code Change: #{resp1.status_code} -> #{resp2.status_code}\n"
+            ]
+
+        true ->
+          changes
+      end
 
     changes =
-    cond do
-      resp1.status_text != resp2.status_text -> changes ++ ["URL+Method (identifier): #{key} \n Response Status Text: #{resp1.status_text} -> #{resp2.status_text}"]
-      true -> changes
-    end
+      cond do
+        resp1.status_text != resp2.status_text ->
+          changes ++
+            [
+              "URL+Method (identifier): #{key} \n Response Status Text Change: #{resp1.status_text} -> #{resp2.status_text}\n"
+            ]
+
+        true ->
+          changes
+      end
 
     changes =
-    cond do
-      resp1.body != resp2.body -> changes ++ ["URL+Method (identifier): #{key} \n Response Body: #{resp1.body} -> #{resp2.body}"]
-      true -> changes
-    end
+      cond do
+        resp1.body != resp2.body ->
+          changes ++
+            ["URL+Method (identifier): #{key} \n Response Body Change: #{resp1.body} -> #{resp2.body}\n"]
+
+        true ->
+          changes
+      end
 
     # compare headers
-    header_changes = compare_headers(resp1.headers, resp2.headers)
+    header_changes = compare_headers(key, resp1.headers, resp2.headers)
+    IO.puts("header_changes: #{inspect(header_changes)}")
     changes = changes ++ header_changes
 
     changes
   end
 
-  def compare_headers(headers1, headers2) do
-    changes = []
+  def compare_headers(req1, req2, headers1, headers2) do
     # comparing headers' order and content
-    Enum.zip(headers1, headers2)
-    |> Enum.each(fn {h1, h2} when h1 != h2 ->
-      changes = [changes | "Header: #{h1.name}: #{h1.value} -> #{h2.name}: #{h2.value}"]
-      _ -> nil
+    zipped_changes = Enum.flat_map(Enum.zip(headers1, headers2), fn
+      {h1, h2} when h1 != h2 ->
+        IO.puts("Header Change: #{h1.name}: #{h1.value} -> #{h2.name}: #{h2.value}")
+        ["URL+Method (identifier): #{req1.url},#{req1.method}\nHeader: #{h1.name}: #{h1.value} ->\n #{h2.name}: #{h2.value}\n"]
+      _ ->
+        []
     end)
 
     # finding header additions and removals
-    additions = headers2 -- headers1
-    removals = headers1 -- headers2
-
-    Enum.each(additions, fn header ->
-      changes = [changes | "Header Addition: #{header.name}: #{header.value}"]
+    additions_changes = Enum.flat_map(headers2 -- headers1, fn header ->
+      IO.puts("Header Addition: #{header.name}: #{header.value}")
+      ["URL+Method (identifier): #{req1.url},#{req1.method}\nHeader Addition: #{header.name}: #{header.value}\n"]
     end)
 
-    Enum.each(removals, fn header ->
-      changes = [changes | "Header Removal: #{header.name}: #{header.value}"]
+    removals_changes = Enum.flat_map(headers1 -- headers2, fn header ->
+      IO.puts("Header Removal: #{header.name}: #{header.value}")
+      ["URL+Method (identifier): #{req1.url},#{req1.method}\nHeader Removal: #{header.name}: #{header.value}\n"]
     end)
+
+    changes = zipped_changes ++ additions_changes ++ removals_changes
+    IO.puts("changes from headers func: #{inspect(changes)}")
+    changes
+  end
+
+  def compare_headers(key, headers1, headers2) do
+    # comparing headers' order and content
+    zipped_changes = Enum.flat_map(Enum.zip(headers1, headers2), fn
+      {h1, h2} when h1 != h2 ->
+        IO.puts("Header Change: #{h1.name}: #{h1.value} -> #{h2.name}: #{h2.value}")
+        ["URL+Method (identifier): #{key} \n Header Change: #{h1.name}: #{h1.value} ->\n #{h2.name}: #{h2.value}\n"]
+      _ ->
+        []
+    end)
+
+    # finding header additions and removals
+    additions_changes = Enum.flat_map(headers2 -- headers1, fn header ->
+      IO.puts("Header Addition: #{header.name}: #{header.value}")
+      ["URL+Method (identifier): #{key} \n Header Addition: #{header.name}: #{header.value}\n"]
+    end)
+
+    removals_changes = Enum.flat_map(headers1 -- headers2, fn header ->
+      IO.puts("Header Removal: #{header.name}: #{header.value}")
+      ["URL+Method (identifier): #{key} \n Header Removal: #{header.name}: #{header.value}\n"]
+    end)
+
+    changes = zipped_changes ++ additions_changes ++ removals_changes
+    IO.puts("changes from headers func: #{inspect(changes)}")
     changes
   end
 end
