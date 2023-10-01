@@ -20,9 +20,10 @@ end
 
 defmodule TellerCompare do
   def main([file1_path, file2_path]) do
-
-    parsed_file1 = read_parse_json(file1_path) # reading and parsing file1
-    parsed_file2 = read_parse_json(file2_path) # reading and parsing file2
+    # reading and parsing file1
+    parsed_file1 = read_parse_json(file1_path)
+    # reading and parsing file2
+    parsed_file2 = read_parse_json(file2_path)
 
     changes = compare_data_deep(parsed_file1, parsed_file2)
 
@@ -62,10 +63,13 @@ defmodule TellerCompare do
         obj1 = Map.get(data1_map, key)
         obj2 = Map.get(data2_map, key)
 
-        request_changes = DeepComparator.compare_requests(obj1.request, obj2.request) # comparing request
-        response_changes = DeepComparator.compare_response(key, obj1.response, obj2.response) # comparing response
+        # comparing request
+        request_changes = DeepComparator.compare_requests(obj1.request, obj2.request)
+        # comparing response
+        response_changes = DeepComparator.compare_response(key, obj1.response, obj2.response)
 
-        request_changes ++ response_changes # combining the changes
+        # combining the changes
+        request_changes ++ response_changes
       end)
 
     # finding the additions. dropping the common keys from data2_map (second file) to get the additions
@@ -84,6 +88,7 @@ defmodule TellerCompare do
         response_str = inspect(Map.from_struct(response))
         response_str = String.replace(response_str, "%", "")
         http_version_str = inspect(http_version)
+
         "URL+Method (identifier): #{url_method}\n Addition: {\n  http_version: #{http_version_str}\n  request: #{request_str}\n  response: #{response_str}}\n"
       end)
 
@@ -103,6 +108,7 @@ defmodule TellerCompare do
         response_str = inspect(Map.from_struct(response))
         response_str = String.replace(response_str, "%", "")
         http_version_str = inspect(http_version)
+
         "URL+Method (identifier): #{url_method}\n Removal: {\n  http_version: #{http_version_str}\n  request: #{request_str}\n  response: #{response_str}}\n"
       end)
 
@@ -125,6 +131,7 @@ defmodule TellerCompare do
           }
         ]
       )
+
     parsed_content
   end
 end
@@ -226,7 +233,9 @@ defmodule DeepComparator do
       cond do
         resp1.body != resp2.body ->
           changes ++
-            ["URL+Method (identifier): #{key} \n Response Body Change: \n  #{resp1.body} -> #{resp2.body}\n"]
+            [
+              "URL+Method (identifier): #{key} \n Response Body Change: \n  #{resp1.body} -> #{resp2.body}\n"
+            ]
 
         true ->
           changes
@@ -241,21 +250,31 @@ defmodule DeepComparator do
 
   def compare_headers(req1, _req2, headers1, headers2) do
     # comparing headers' order and content
-    zipped_changes = Enum.flat_map(Enum.zip(headers1, headers2), fn
-      {h1, h2} when h1 != h2 ->
-        ["URL+Method (identifier): #{req1.url},#{req1.method}\n Header Change: \n  #{h1.name}: #{h1.value} ->\n  #{h2.name}: #{h2.value}\n"]
-      _ ->
-        []
-    end)
+    zipped_changes =
+      Enum.flat_map(Enum.zip(headers1, headers2), fn
+        {h1, h2} when h1 != h2 ->
+          [
+            "URL+Method (identifier): #{req1.url},#{req1.method}\n Header Change: \n  #{h1.name}: #{h1.value} ->\n  #{h2.name}: #{h2.value}\n"
+          ]
+
+        _ ->
+          []
+      end)
 
     # finding header additions and removals
-    additions_changes = Enum.flat_map(headers2 -- headers1, fn header ->
-      ["URL+Method (identifier): #{req1.url},#{req1.method}\nHeader Addition: \n  #{header.name}: #{header.value}\n"]
-    end)
+    additions_changes =
+      Enum.flat_map(headers2 -- headers1, fn header ->
+        [
+          "URL+Method (identifier): #{req1.url},#{req1.method}\nHeader Addition: \n  #{header.name}: #{header.value}\n"
+        ]
+      end)
 
-    removals_changes = Enum.flat_map(headers1 -- headers2, fn header ->
-      ["URL+Method (identifier): #{req1.url},#{req1.method}\nHeader Removal: \n  #{header.name}: #{header.value}\n"]
-    end)
+    removals_changes =
+      Enum.flat_map(headers1 -- headers2, fn header ->
+        [
+          "URL+Method (identifier): #{req1.url},#{req1.method}\nHeader Removal: \n  #{header.name}: #{header.value}\n"
+        ]
+      end)
 
     changes = zipped_changes ++ additions_changes ++ removals_changes
     changes
@@ -263,21 +282,31 @@ defmodule DeepComparator do
 
   def compare_headers(key, headers1, headers2) do
     # comparing headers' order and content
-    zipped_changes = Enum.flat_map(Enum.zip(headers1, headers2), fn
-      {h1, h2} when h1 != h2 ->
-        ["URL+Method (identifier): #{key} \n Header Change: \n  #{h1.name}: #{h1.value} ->\n  #{h2.name}: #{h2.value}\n"]
-      _ ->
-        []
-    end)
+    zipped_changes =
+      Enum.flat_map(Enum.zip(headers1, headers2), fn
+        {h1, h2} when h1 != h2 ->
+          [
+            "URL+Method (identifier): #{key} \n Header Change: \n  #{h1.name}: #{h1.value} ->\n  #{h2.name}: #{h2.value}\n"
+          ]
+
+        _ ->
+          []
+      end)
 
     # finding header additions and removals
-    additions_changes = Enum.flat_map(headers2 -- headers1, fn header ->
-      ["URL+Method (identifier): #{key} \n Header Addition: \n  #{header.name}: #{header.value}\n"]
-    end)
+    additions_changes =
+      Enum.flat_map(headers2 -- headers1, fn header ->
+        [
+          "URL+Method (identifier): #{key} \n Header Addition: \n  #{header.name}: #{header.value}\n"
+        ]
+      end)
 
-    removals_changes = Enum.flat_map(headers1 -- headers2, fn header ->
-      ["URL+Method (identifier): #{key} \n Header Removal: \n  #{header.name}: #{header.value}\n"]
-    end)
+    removals_changes =
+      Enum.flat_map(headers1 -- headers2, fn header ->
+        [
+          "URL+Method (identifier): #{key} \n Header Removal: \n  #{header.name}: #{header.value}\n"
+        ]
+      end)
 
     changes = zipped_changes ++ additions_changes ++ removals_changes
     changes
