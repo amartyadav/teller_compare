@@ -49,16 +49,8 @@ defmodule TellerCompare do
     # creating a map for data2 with the identifier() function's return value as the key and the object as the value
     data2_map = Map.new(data2, &{identifier(&1), &1})
 
-    # IO.puts("data1_map: #{inspect(data1_map)}")
-    # IO.puts("data2_map: #{inspect(data2_map)}")
-
-    # key = {"https://status.thebank.teller.engineering/status.json?downtimeTimestamp=1691577508.930853", "GET"}
-    # IO.puts("Key in data1_map: #{Map.has_key?(data1_map, key)}")
-    # IO.puts("Key in data2_map: #{Map.has_key?(data2_map, key)}")
-
     # finding the common keys between the two maps using list comprehension
     common_keys = for {k, _v} <- data1_map, Map.has_key?(data2_map, k), do: k
-    # IO.puts("common_keys: #{inspect(common_keys)}")
 
     # creating a set of the common keys
     common_keys_set = MapSet.new(common_keys)
@@ -133,10 +125,6 @@ defmodule TellerCompare do
           }
         ]
       )
-
-    # IO.puts("Parsed Content----")
-    # IO.puts(inspect(parsed_content))
-    # IO.puts("\n")
     parsed_content
   end
 end
@@ -195,7 +183,6 @@ defmodule DeepComparator do
 
     # compare headers
     header_changes = compare_headers(req1, req2, req1.headers, req2.headers)
-    IO.puts("header_changes: #{inspect(header_changes)}")
     changes = changes ++ header_changes
 
     changes
@@ -247,17 +234,15 @@ defmodule DeepComparator do
 
     # compare headers
     header_changes = compare_headers(key, resp1.headers, resp2.headers)
-    IO.puts("header_changes: #{inspect(header_changes)}")
     changes = changes ++ header_changes
 
     changes
   end
 
-  def compare_headers(req1, req2, headers1, headers2) do
+  def compare_headers(req1, _req2, headers1, headers2) do
     # comparing headers' order and content
     zipped_changes = Enum.flat_map(Enum.zip(headers1, headers2), fn
       {h1, h2} when h1 != h2 ->
-        IO.puts("Header Change: #{h1.name}: #{h1.value} -> #{h2.name}: #{h2.value}")
         ["URL+Method (identifier): #{req1.url},#{req1.method}\n Header Change: \n  #{h1.name}: #{h1.value} ->\n  #{h2.name}: #{h2.value}\n"]
       _ ->
         []
@@ -265,17 +250,14 @@ defmodule DeepComparator do
 
     # finding header additions and removals
     additions_changes = Enum.flat_map(headers2 -- headers1, fn header ->
-      IO.puts("Header Addition: #{header.name}: #{header.value}")
       ["URL+Method (identifier): #{req1.url},#{req1.method}\nHeader Addition: \n  #{header.name}: #{header.value}\n"]
     end)
 
     removals_changes = Enum.flat_map(headers1 -- headers2, fn header ->
-      IO.puts("Header Removal: #{header.name}: #{header.value}")
       ["URL+Method (identifier): #{req1.url},#{req1.method}\nHeader Removal: \n  #{header.name}: #{header.value}\n"]
     end)
 
     changes = zipped_changes ++ additions_changes ++ removals_changes
-    IO.puts("changes from headers func: #{inspect(changes)}")
     changes
   end
 
@@ -283,7 +265,6 @@ defmodule DeepComparator do
     # comparing headers' order and content
     zipped_changes = Enum.flat_map(Enum.zip(headers1, headers2), fn
       {h1, h2} when h1 != h2 ->
-        IO.puts("Header Change: #{h1.name}: #{h1.value} -> #{h2.name}: #{h2.value}")
         ["URL+Method (identifier): #{key} \n Header Change: \n  #{h1.name}: #{h1.value} ->\n  #{h2.name}: #{h2.value}\n"]
       _ ->
         []
@@ -291,17 +272,14 @@ defmodule DeepComparator do
 
     # finding header additions and removals
     additions_changes = Enum.flat_map(headers2 -- headers1, fn header ->
-      IO.puts("Header Addition: #{header.name}: #{header.value}")
       ["URL+Method (identifier): #{key} \n Header Addition: \n  #{header.name}: #{header.value}\n"]
     end)
 
     removals_changes = Enum.flat_map(headers1 -- headers2, fn header ->
-      IO.puts("Header Removal: #{header.name}: #{header.value}")
       ["URL+Method (identifier): #{key} \n Header Removal: \n  #{header.name}: #{header.value}\n"]
     end)
 
     changes = zipped_changes ++ additions_changes ++ removals_changes
-    IO.puts("changes from headers func: #{inspect(changes)}")
     changes
   end
 end
