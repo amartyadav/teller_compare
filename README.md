@@ -8,7 +8,7 @@ Github Repository: [teller-compare](https://github.com/amartyadav/teller_compare
 The tool can be run by cloning/downloading the project directory locally.
 -  Download the code directory or Clone the project locally
 - `mix deps.get` in the terminal under the project directory path
-- The project direcotry currently contains the example files at the root level. Running `mix run -e "TellerCompare.main([\"13.3.7.json\", \"13.4.0.json\"])"` runs the tool with those two files as the arguments. The output file is generated at the same root level as the input files named 'output_diff.txt'.
+- The project directory currently contains the example files at the root level. Running `mix run -e "TellerCompare.main([\"13.3.7.json\", \"13.4.0.json\"])"` runs the tool with those two files as the arguments. The output file is generated at the same root level as the input files named 'output_diff.txt'.
 
 ## Code Explanation and Decision Justification
 #### General Overview
